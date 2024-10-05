@@ -5,6 +5,7 @@ import {
   databases,
 } from "../../appwriteConfig";
 import { ID, Query } from "appwrite";
+import { Trash2 } from "react-feather";
 
 const Room = () => {
   const [messages, setMessages] = useState([]);
@@ -36,10 +37,19 @@ const Room = () => {
     const response = await databases.listDocuments(
       DATABASE_ID,
       COLLECTION_MESSAGES_ID,
-      [Query.orderDesc("$createdAt")]
+      [Query.orderDesc("$createdAt"), Query.limit(20)]
     );
     console.log(response);
     setMessages(response.documents);
+  };
+
+  const deleteMessage = async (message_id) => {
+    await databases.deleteDocument(
+      DATABASE_ID,
+      COLLECTION_MESSAGES_ID,
+      message_id
+    );
+    setMessages(() => messages.filter((message) => message.$id !== message_id));
   };
 
   return (
@@ -64,8 +74,14 @@ const Room = () => {
             <div key={message.$id} className="message--wrapper">
               <div className="message--header">
                 <small className="message-timestamp">
-                  {message.$createdAt}
+                  {new Date(message.$createdAt).toLocaleString()}
                 </small>
+                <Trash2
+                  onClick={() => {
+                    deleteMessage(message.$id);
+                  }}
+                  className="delete--btn"
+                />
               </div>
               <div className="message--body">
                 <span>{message.body}</span>
