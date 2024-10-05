@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import {
+import client, {
   COLLECTION_MESSAGES_ID,
   DATABASE_ID,
   databases,
@@ -13,6 +13,28 @@ const Room = () => {
 
   useEffect(() => {
     getMessages();
+    client.subscribe(
+      `databases.${DATABASE_ID}.collections.${COLLECTION_MESSAGES_ID}.documents`,
+      (response) => {
+        // Callback will be executed on changes for documents A and all files.
+        console.log("REAL TIME", response);
+
+        if (
+          response.events.includes(
+            "databases.*.collections.*.documents.*.create"
+          )
+        ) {
+          console.log("Message was created");
+        }
+        if (
+          response.events.includes(
+            "databases.*.collections.*.documents.*.delete"
+          )
+        ) {
+          console.log("Message was deleted");
+        }
+      }
+    );
   }, []);
 
   let payload = {

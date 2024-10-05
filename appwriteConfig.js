@@ -13,3 +13,4 @@ client
   .setProject("66ff8bfa00336d19e55a");
 
 export const databases = new Databases(client);
+export default client;
