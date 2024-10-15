@@ -13,7 +13,7 @@ const Room = () => {
 
   useEffect(() => {
     getMessages();
-    client.subscribe(
+    const unsubscribe = client.subscribe(
       `databases.${DATABASE_ID}.collections.${COLLECTION_MESSAGES_ID}.documents`,
       (response) => {
         // Callback will be executed on changes for documents A and all files.
@@ -25,6 +25,7 @@ const Room = () => {
           )
         ) {
           console.log("Message was created");
+          setMessages((prevState) => [response.payload, ...prevState]);
         }
         if (
           response.events.includes(
@@ -32,9 +33,15 @@ const Room = () => {
           )
         ) {
           console.log("Message was deleted");
+          setMessages((prevState) =>
+            prevState.filter((message) => message.$id !== response.payload.$id)
+          );
         }
       }
     );
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   let payload = {
@@ -51,7 +58,6 @@ const Room = () => {
       payload
     );
     console.log("Created", response);
-    setMessages((prevState) => [response, ...prevState]);
     setMessageBody("");
   };
 
@@ -71,7 +77,7 @@ const Room = () => {
       COLLECTION_MESSAGES_ID,
       message_id
     );
-    setMessages(() => messages.filter((message) => message.$id !== message_id));
+    //  setMessages(() => messages.filter((message) => message.$id !== message_id));
   };
 
   return (
